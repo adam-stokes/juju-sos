@@ -20,7 +20,8 @@ package commands
 
 import (
 	"os"
-	"runtime"
+	"fmt"
+	"strings"
 
 	"github.com/juju/loggo"
 
@@ -68,10 +69,9 @@ func (c *SosCommand) ExecSsh(m *state.Machine) error {
 	if host == "" {
 		return fmt.Errorf("could not resolve machine's public address")
 	}
-	log.Println("Capturing sosreport for machine ", m.Id())
+	logger.Infof("Capturing sosreport for machine %s", m.Id())
 	var options ssh.Options
 	cmd := ssh.Command("ubuntu@"+host, []string{"sudo sh -c soseport -b"}, &options)
-	cmd.Stdin = strings.NewReader(script)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
