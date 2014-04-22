@@ -10,6 +10,8 @@ a juju plugin for capturing sosreports from deployed juju machines.
 $ go get github.com/battlemidget/juju-sos
 ```
 
+I recommend the use of [gvm](https://github.com/moovweb/gvm).
+
 ## running
 
 Specific machine (1 in this case)
@@ -27,6 +29,7 @@ $ juju sos -d $HOME/sosreports
 # copyright
 
 (c) 2014 Adam Stokes <adam.stokes@ubuntu.com>
+
 (c) 2014 Canonical Ltd.
 
 # license

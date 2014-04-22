@@ -26,8 +26,9 @@ import (
 
 var logger = loggo.GetLogger("juju.plugin.sos")
 var Destination string
+var MachineId int
 
-var SosCmd = &cobra.Command{Use: "juju-sos",
+var SosCmd = &cobra.Command{Use: "juju sos -d <dir> -m <machine_id>",
 	Short: "juju-sos is a juju plugin for capturing sosreport data",
 	Long: `Capture sosreport data from multiple machines
 or a single machine in a juju environment`,
@@ -36,20 +37,25 @@ or a single machine in a juju environment`,
 
 func init() {
 	SosCmd.Flags().StringVarP(&Destination, "destination", "d", "", "Output directory to store sos archives")
+	SosCmd.Flags().IntVarP(&MachineId, "machine", "m", 0, "(optional) Id of machine")
 }
 
 func capture(cmd *cobra.Command, args []string) {
 	if Destination != "" {
 		logger.Infof("Capturing and saving reports in: %s\n", Destination)
 	} else {
-		panic("A destination is required.")
+		logger.Errorf("A destination is required, see `help` for more information.")
+	}
+
+	if MachineId > 0 {
+		logger.Infof("Selective capturing of machine %d", MachineId)
+	} else {
+		logger.Infof("Capturing sosreports from all known machines")
 	}
 }
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	loggo.ConfigureLoggers("<root>=INFO")
-	logger.Infof("start this ish up.")
-
 	SosCmd.Execute()
 }
