@@ -26,6 +26,24 @@ All machines
 $ juju sos -d $HOME/sosreports
 ```
 
+## todo
+
+* use juju api
+
+* filter sos captures based on services
+
+* unittests
+
+* pass arguments to sosreport for specific capturing options, for example,
+
+```console
+
+$ juju sos -d ~/sosreport -- -b -o juju,maas,nova-compute
+
+```
+
+Would only execute sosreport in batch mode (-b) and only the plugins `juju, maas, nova-compute`.
+
 # copyright
 
 (c) 2014 Adam Stokes <adam.stokes@ubuntu.com>

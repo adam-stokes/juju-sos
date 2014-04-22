@@ -19,14 +19,30 @@
 package main
 
 import (
+	"os"
+	"runtime"
+
 	"github.com/juju/loggo"
 	"github.com/spf13/cobra"
-	"runtime"
+
+	"launchpad.net/juju-core/cmd"
+	"launchpad.net/juju-core/juju"
+	"launchpad.net/juju-core/names"
+
+	// juju providers
+	_ "launchpad.net/juju-core/provider/all"
+
+	soscmd "github.com/battlemidget/juju-sos/cmd"
 )
 
-var logger = loggo.GetLogger("juju.plugin.sos")
+var logger = loggo.GetLogger("juju.sos")
 var Destination string
 var MachineId int
+
+type SosCaptureCommand struct {
+	soscmd.SosCommand
+	target string
+}
 
 var SosCmd = &cobra.Command{Use: "juju sos -d <dir> -m <machine_id>",
 	Short: "juju-sos is a juju plugin for capturing sosreport data",
@@ -54,8 +70,33 @@ func capture(cmd *cobra.Command, args []string) {
 	}
 }
 
+func (c *SosCaptureCommand) Run(ctx *cmd.Context) error {
+	err := c.Connect(c.target)
+	if err != nil {
+		return err
+	}
+	for _, m := range c.MachineMap {
+		err := c.ExecSsh(m)
+		if err != nil {
+			loggo.Errorf("Unable to run sosreport on machine: %d (%s)", m, err)
+			return err
+		}
+	}
+}
+
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	loggo.ConfigureLoggers("<root>=INFO")
 	SosCmd.Execute()
+
+	err := juju.InitJujuHome()
+	if err != nil {
+		panic(err)
+	}
+	ctx, err := cmd.DefaultContext()
+	if err != nil {
+		panic(err)
+	}
+	c := &SosCaptureCommand{}
+	cmd.Main(c, ctx, os.Args[1:])
 }
