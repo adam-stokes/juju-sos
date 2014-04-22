@@ -32,7 +32,7 @@ import (
 	// juju providers
 	_ "launchpad.net/juju-core/provider/all"
 
-	soscmd "github.com/battlemidget/juju-sos/cmd"
+	"github.com/battlemidget/juju-sos/commands"
 )
 
 var logger = loggo.GetLogger("juju.sos")
@@ -40,7 +40,7 @@ var Destination string
 var MachineId int
 
 type SosCaptureCommand struct {
-	soscmd.SosCommand
+	commands.SosCommand
 	target string
 }
 
