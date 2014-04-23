@@ -14,6 +14,8 @@ you see any resemblance thats why :)
 $ go get github.com/battlemidget/juju-sos
 ```
 
+Make sure `juju-sos` is in your `$PATH`.
+
 ## running
 
 Specific machine (1 in this case)
