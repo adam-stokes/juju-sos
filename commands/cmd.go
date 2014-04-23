@@ -19,7 +19,6 @@
 package commands
 
 import (
-	"os"
 	"fmt"
 
 	"github.com/juju/loggo"
@@ -90,7 +89,5 @@ func (c *SosCommand) ExecSsh(m *state.Machine) error {
 	var options ssh.Options
 	cmdStr := []string{"sudo apt-get install -yy sosreport && sudo sosreport --batch && sudo chown ubuntu:ubuntu -R /tmp/sosreport*"}
 	cmd := ssh.Command("ubuntu@"+host, cmdStr, &options)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
 	return cmd.Run()
 }

@@ -69,6 +69,15 @@ func (c *SosCaptureCommand) Init(args []string) error {
 	if c.destination == "" {
 		return fmt.Errorf("A destination is required, see `help` for more information.")
 	}
+	if c.destination != "" {
+		finfo, err := os.Stat(c.destination)
+		if err != nil {
+			return fmt.Errorf("%q doesn't exist, you must create that directory first", c.destination)
+		}
+		if !finfo.IsDir() {
+			return fmt.Errorf("Found %q, but it isn't a directory :(", c.destination)
+		}
+	}
 	if c.target == "0" {
 		return fmt.Errorf("Machine cannot be 0.")
 	}
@@ -88,7 +97,7 @@ func (c *SosCaptureCommand) Run(ctx *cmd.Context) error {
 		}
 		// scp
 		logger.Infof("Copying archive to %q", c.destination)
-		copyStr := exec.Command(fmt.Sprintf("juju scp -r %s:/tmp/sosreport*.xz %s", c.target, c.destination))
+		copyStr := exec.Command("juju","scp","--","-r", c.target+":/tmp/sosreport*xz", c.destination)
 		copyStr.Stdout = os.Stdout
 		err = copyStr.Run()
 		if err != nil {
@@ -106,8 +115,11 @@ func (c *SosCaptureCommand) Run(ctx *cmd.Context) error {
 				// dont make this fatal
 				logger.Errorf("Unable to run sosreport on machine: %d (%s)", m.Id(), err)
 			}
-			copyStr := exec.Command(fmt.Sprintf("juju scp -r %s:/tmp/sosreport*.xz %s", c.target, c.destination))
+			// scp
+			logger.Infof("Copying archive to %q", c.destination)
+			copyStr := exec.Command("juju","scp","--","-r", m.Id()+":/tmp/sosreport*xz", c.destination)
 			copyStr.Stdout = os.Stdout
+			copyStr.Stderr = os.Stderr
 			err = copyStr.Run()
 			if err != nil {
 				return fmt.Errorf("Failed to copy sosreport: %v", err)

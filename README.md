@@ -30,9 +30,9 @@ $ juju sos -d $HOME/sosreports
 
 ## todo
 
-* use juju api
-
 * filter sos captures based on services
+
+* rename capture reports to match hostname retrieved from
 
 * unittests
 
