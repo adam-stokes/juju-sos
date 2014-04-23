@@ -88,7 +88,7 @@ func (c *SosCommand) ExecSsh(m *state.Machine) error {
 	// TODO: Remove when LP: #1311274 is released
 	logger.Infof("Capturing sosreport for machine %s", m.Id())
 	var options ssh.Options
-	cmdStr := []string{"sudo apt-get install -yy sosreport && sudo sosreport --batch"}
+	cmdStr := []string{"sudo apt-get install -yy sosreport && sudo sosreport --batch && sudo chown ubuntu:ubuntu -R /tmp/sosreport*"}
 	cmd := ssh.Command("ubuntu@"+host, cmdStr, &options)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
