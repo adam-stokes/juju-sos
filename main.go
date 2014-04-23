@@ -20,14 +20,12 @@ package main
 
 import (
 	"os"
-	"runtime"
+	"fmt"
 
 	"github.com/juju/loggo"
-	"github.com/spf13/cobra"
-
+	"launchpad.net/gnuflag"
 	"launchpad.net/juju-core/cmd"
 	"launchpad.net/juju-core/juju"
-	"launchpad.net/juju-core/names"
 
 	// juju providers
 	_ "launchpad.net/juju-core/provider/all"
@@ -36,38 +34,44 @@ import (
 )
 
 var logger = loggo.GetLogger("juju.sos")
-var Destination string
-var MachineId int
 
 type SosCaptureCommand struct {
 	commands.SosCommand
 	target string
+	destination string
 }
 
-var SosCmd = &cobra.Command{Use: "juju sos -d <dir> -m <machine_id>",
-	Short: "juju-sos is a juju plugin for capturing sosreport data",
-	Long: `Capture sosreport data from multiple machines
-or a single machine in a juju environment`,
-	Run: capture,
-}
+var doc = `Capture sosreport data from multiple machines
+or a single machine in a juju environment
+`
 
-func init() {
-	SosCmd.Flags().StringVarP(&Destination, "destination", "d", "", "Output directory to store sos archives")
-	SosCmd.Flags().IntVarP(&MachineId, "machine", "m", 0, "(optional) Id of machine")
-}
-
-func capture(cmd *cobra.Command, args []string) {
-	if Destination != "" {
-		logger.Infof("Capturing and saving reports in: %s\n", Destination)
-	} else {
-		logger.Errorf("A destination is required, see `help` for more information.")
+func (c *SosCaptureCommand) Info() *cmd.Info {
+	return &cmd.Info{
+		Name: "sos",
+		Args: "[args] <target>",
+		Purpose: "Capture sosreport from machine",
+		Doc: doc,
 	}
+}
 
-	if MachineId > 0 {
-		logger.Infof("Selective capturing of machine %d", MachineId)
-	} else {
-		logger.Infof("Capturing sosreports from all known machines")
+func (c *SosCaptureCommand) SetFlags(f *gnuflag.FlagSet) {
+	c.SosCommand.SetFlags(f)
+	f.StringVar(&c.destination, "d", "", "Output directory to store sos archives")
+	f.StringVar(&c.target, "m", "", "(optional) Id of machine")
+}
+
+func (c *SosCaptureCommand) Init(args []string) error {
+	err := c.SosCommand.Init()
+	if err != nil {
+		return err
 	}
+	if c.destination == "" {
+		return fmt.Errorf("A destination is required, see `help` for more information.")
+	}
+	if c.target == "0" {
+		return fmt.Errorf("Machine cannot be 0.")
+	}
+	return nil
 }
 
 func (c *SosCaptureCommand) Run(ctx *cmd.Context) error {
@@ -75,19 +79,27 @@ func (c *SosCaptureCommand) Run(ctx *cmd.Context) error {
 	if err != nil {
 		return err
 	}
-	for _, m := range c.MachineMap {
-		err := c.ExecSsh(m)
+
+	if c.target != "" {
+		machine := c.MachineMap[c.target]
+		err := c.ExecSsh(machine)
 		if err != nil {
-			loggo.Errorf("Unable to run sosreport on machine: %d (%s)", m, err)
-			return err
+			return fmt.Errorf("Unable to run sosreport on machine: %s (%s)", machine.Id(), err)
+		}
+	} else {
+		for _, m := range c.MachineMap {
+			err := c.ExecSsh(m)
+			if err != nil {
+				// dont make this fatal
+				logger.Errorf("Unable to run sosreport on machine: %d (%s)", m.Id(), err)
+			}
 		}
 	}
+	return nil
 }
 
 func main() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
 	loggo.ConfigureLoggers("<root>=INFO")
-	SosCmd.Execute()
 
 	err := juju.InitJujuHome()
 	if err != nil {

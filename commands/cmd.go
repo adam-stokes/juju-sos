@@ -21,7 +21,6 @@ package commands
 import (
 	"os"
 	"fmt"
-	"strings"
 
 	"github.com/juju/loggo"
 
@@ -58,6 +57,7 @@ func (c *SosCommand) Connect(target string) error {
 
 	machines, err := st.AllMachines()
 	for _, m := range machines {
+		logger.Infof("Found machine(%s)", m.Id())
 		c.MachineMap[m.Id()] = m
 	}
 

@@ -3,14 +3,16 @@ juju sos
 
 a juju plugin for capturing sosreports from deployed juju machines.
 
+my motivation and reference comes form the  work of
+[Casey Marshall's juju-nat](https://github.com/cmars/juju-nat). so if
+you see any resemblence thats why :)
+
 
 ## install
 
 ```console
 $ go get github.com/battlemidget/juju-sos
 ```
-
-I recommend the use of [gvm](https://github.com/moovweb/gvm).
 
 ## running
 
