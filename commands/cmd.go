@@ -27,7 +27,6 @@ import (
 	"launchpad.net/juju-core/cmd/envcmd"
 	"launchpad.net/juju-core/instance"
 	"launchpad.net/juju-core/juju"
-	"launchpad.net/juju-core/names"
 	"launchpad.net/juju-core/state"
 	"launchpad.net/juju-core/utils/ssh"
 )
@@ -40,7 +39,7 @@ type SosCommand struct {
 	MachineMap map[string]*state.Machine
 }
 
-func (c *SosCommand) Connect(target string) error {
+func (c *SosCommand) Query(target string) error {
 	var err error
 	c.Conn, err = juju.NewConnFromName(c.EnvName)
 	if err != nil {
@@ -48,19 +47,35 @@ func (c *SosCommand) Connect(target string) error {
 	}
 	defer c.Conn.Close()
 
-	if !names.IsMachine(target) {
-		return fmt.Errorf("invalid target: %q", target)
-	}
-
 	c.MachineMap = make(map[string]*state.Machine)
 	st := c.Conn.State
 
-	machines, err := st.AllMachines()
-	for _, m := range machines {
-		logger.Infof("Found machine(%s)", m.Id())
-		c.MachineMap[m.Id()] = m
+	if target == "" {
+		logger.Infof("Querying all machines")
+
+		machines, err := st.AllMachines()
+		for _, m := range machines {
+			// dont care about machine 0
+			if m.Id() != "0" {
+				logger.Infof("Adding machine(%s)", m.Id())
+				c.MachineMap[m.Id()] = m
+			}
+		}
+		if err != nil {
+			return err
+		}
+		return nil
 	}
 
+	if target != "" {
+		logger.Infof("Querying one machine(%s)", target)
+		m, err := st.Machine(target)
+		if err != nil {
+			return fmt.Errorf("Unable to use machine(%s)", target)
+		}
+		c.MachineMap[m.Id()] = m
+		return nil
+	}
 	return nil
 }
 
@@ -69,9 +84,12 @@ func (c *SosCommand) ExecSsh(m *state.Machine) error {
 	if host == "" {
 		return fmt.Errorf("could not resolve machine's public address")
 	}
+	// make sure sosreport is installed
+	// TODO: Remove when LP: #1311274 is released
 	logger.Infof("Capturing sosreport for machine %s", m.Id())
 	var options ssh.Options
-	cmd := ssh.Command("ubuntu@"+host, []string{"sudo sh -c soseport -b"}, &options)
+	cmdStr := []string{"sudo apt-get install -yy sosreport && sudo sosreport --batch"}
+	cmd := ssh.Command("ubuntu@"+host, cmdStr, &options)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()

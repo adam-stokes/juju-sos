@@ -26,6 +26,7 @@ import (
 	"launchpad.net/gnuflag"
 	"launchpad.net/juju-core/cmd"
 	"launchpad.net/juju-core/juju"
+	"launchpad.net/juju-core/utils/ssh"
 
 	// juju providers
 	_ "launchpad.net/juju-core/provider/all"
@@ -75,20 +76,31 @@ func (c *SosCaptureCommand) Init(args []string) error {
 }
 
 func (c *SosCaptureCommand) Run(ctx *cmd.Context) error {
-	err := c.Connect(c.target)
-	if err != nil {
-		return err
-	}
-
 	if c.target != "" {
-		machine := c.MachineMap[c.target]
-		err := c.ExecSsh(machine)
+		err := c.Query(c.target)
 		if err != nil {
-			return fmt.Errorf("Unable to run sosreport on machine: %s (%s)", machine.Id(), err)
+			return err
 		}
+		err = c.ExecSsh(c.MachineMap[c.target])
+		if err != nil {
+			return fmt.Errorf("Unable to run sosreport on machine: %s (%s)", c.target, err)
+		}
+		var options ssh.Options
+		copyStr := []string{fmt.Sprintf("%s:/tmp/sosreport*.xz %s", c.target, c.destination)}
+		logger.Infof("Copying archive with %q", copyStr)
+		err = ssh.Copy(copyStr, &options)
+		if err != nil {
+			return fmt.Errorf("Couldnt copy sosreport archive to %q (%v)", c.destination, err)
+		}
+
 	} else {
+		// pass it a blank string :\
+		err := c.Query("")
+		if err != nil {
+			return err
+		}
 		for _, m := range c.MachineMap {
-			err := c.ExecSsh(m)
+			err = c.ExecSsh(m)
 			if err != nil {
 				// dont make this fatal
 				logger.Errorf("Unable to run sosreport on machine: %d (%s)", m.Id(), err)
