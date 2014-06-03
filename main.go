@@ -19,9 +19,9 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
-	"fmt"
 
 	"github.com/juju/loggo"
 	"launchpad.net/gnuflag"
@@ -38,7 +38,7 @@ var logger = loggo.GetLogger("juju.sos")
 
 type SosCaptureCommand struct {
 	commands.SosCommand
-	target string
+	target      string
 	destination string
 }
 
@@ -48,10 +48,10 @@ or a single machine in a juju environment
 
 func (c *SosCaptureCommand) Info() *cmd.Info {
 	return &cmd.Info{
-		Name: "sos",
-		Args: "[args] <target>",
+		Name:    "sos",
+		Args:    "[args] <target>",
 		Purpose: "Capture sosreport from machine",
-		Doc: doc,
+		Doc:     doc,
 	}
 }
 
@@ -97,7 +97,7 @@ func (c *SosCaptureCommand) Run(ctx *cmd.Context) error {
 		}
 		// scp
 		logger.Infof("Copying archive to %q", c.destination)
-		copyStr := exec.Command("juju","scp","--","-r", c.target+":/tmp/sosreport*xz", c.destination)
+		copyStr := exec.Command("juju", "scp", "--", "-r", c.target+":/tmp/sosreport*xz", c.destination)
 		copyStr.Stdout = os.Stdout
 		err = copyStr.Run()
 		if err != nil {
@@ -117,7 +117,7 @@ func (c *SosCaptureCommand) Run(ctx *cmd.Context) error {
 			}
 			// scp
 			logger.Infof("Copying archive to %q", c.destination)
-			copyStr := exec.Command("juju","scp","--","-r", m.Id()+":/tmp/sosreport*xz", c.destination)
+			copyStr := exec.Command("juju", "scp", "--", "-r", m.Id()+":/tmp/sosreport*xz", c.destination)
 			copyStr.Stdout = os.Stdout
 			copyStr.Stderr = os.Stderr
 			err = copyStr.Run()
