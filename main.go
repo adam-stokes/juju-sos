@@ -23,13 +23,13 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/juju/loggo"
-	"launchpad.net/gnuflag"
 	"github.com/juju/cmd"
 	"github.com/juju/juju"
+	"github.com/juju/loggo"
+	"launchpad.net/gnuflag"
 
 	// juju providers
-	_ "github.com/juju-core/provider/all"
+	_ "github.com/juju/juju/provider/all"
 
 	"github.com/battlemidget/juju-sos/commands"
 )

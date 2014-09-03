@@ -22,12 +22,11 @@ import (
 	"fmt"
 
 	"github.com/juju/loggo"
-
-	"github.com/juju/cmd/envcmd"
-	"github.com/juju/instance"
+	"github.com/juju/juju/cmd/envcmd"
+	"github.com/juju/juju/instance"
 	"github.com/juju/juju"
-	"github.com/juju/state"
-	"github.com/juju/utils/ssh"
+	"github.com/juju/juju/state"
+	"github.com/juju/juju/utils/ssh"
 )
 
 var logger = loggo.GetLogger("juju.sos.cmd")
