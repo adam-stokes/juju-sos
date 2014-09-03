@@ -25,11 +25,11 @@ import (
 
 	"github.com/juju/loggo"
 	"launchpad.net/gnuflag"
-	"launchpad.net/juju-core/cmd"
-	"launchpad.net/juju-core/juju"
+	"github.com/juju/cmd"
+	"github.com/juju/juju"
 
 	// juju providers
-	_ "launchpad.net/juju-core/provider/all"
+	_ "github.com/juju-core/provider/all"
 
 	"github.com/battlemidget/juju-sos/commands"
 )

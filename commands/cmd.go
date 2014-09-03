@@ -23,11 +23,11 @@ import (
 
 	"github.com/juju/loggo"
 
-	"launchpad.net/juju-core/cmd/envcmd"
-	"launchpad.net/juju-core/instance"
-	"launchpad.net/juju-core/juju"
-	"launchpad.net/juju-core/state"
-	"launchpad.net/juju-core/utils/ssh"
+	"github.com/juju/cmd/envcmd"
+	"github.com/juju/instance"
+	"github.com/juju/juju"
+	"github.com/juju/state"
+	"github.com/juju/utils/ssh"
 )
 
 var logger = loggo.GetLogger("juju.sos.cmd")
