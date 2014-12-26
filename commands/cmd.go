@@ -82,11 +82,9 @@ func (c *SosCommand) ExecSsh(m *state.Machine) error {
 	if host == "" {
 		return fmt.Errorf("could not resolve machine's public address")
 	}
-	// make sure sosreport is installed
-	// TODO: Remove when LP: #1311274 is released
 	logger.Infof("Capturing sosreport for machine %s", m.Id())
 	var options ssh.Options
-	cmdStr := []string{"sudo apt-get install -yy sosreport && sudo sosreport --batch && sudo chown ubuntu:ubuntu -R /tmp/sosreport*"}
+	cmdStr := []string{"sudo sosreport --batch && sudo chown ubuntu:ubuntu -R /tmp/sosreport*"}
 	cmd := ssh.Command("ubuntu@"+host, cmdStr, &options)
 	return cmd.Run()
 }
