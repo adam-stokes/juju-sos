@@ -30,8 +30,6 @@ import (
 
 	// juju providers
 	_ "github.com/juju/juju/provider/all"
-
-	"github.com/battlemidget/juju-sos/commands"
 )
 
 var logger = loggo.GetLogger("juju.sos")

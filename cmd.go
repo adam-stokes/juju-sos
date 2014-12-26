@@ -16,17 +16,17 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package commands
+package main
 
 import (
 	"fmt"
 
 	"github.com/juju/loggo"
-	"github.com/juju/cmd/envcmd"
+	"github.com/juju/juju/cmd/envcmd"
 	"github.com/juju/juju/instance"
 	"github.com/juju/juju"
 	"github.com/juju/juju/state"
-	"github.com/juju/utils/ssh"
+	"github.com/juju/juju/utils/ssh"
 )
 
 var logger = loggo.GetLogger("juju.sos.cmd")
