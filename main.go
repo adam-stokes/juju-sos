@@ -24,18 +24,19 @@ import (
 	"os/exec"
 
 	"github.com/juju/cmd"
-	"github.com/juju/juju"
 	"github.com/juju/loggo"
+
+	"github.com/juju/juju"
 	"launchpad.net/gnuflag"
 
 	// juju providers
-	_ "github.com/juju/juju/provider/all"
+	// _ "github.com/juju/juju/provider/all"
 )
 
 var logger = loggo.GetLogger("juju.sos")
 
 type SosCaptureCommand struct {
-	commands.SosCommand
+	SosCommand
 	target      string
 	destination string
 }
@@ -60,25 +61,21 @@ func (c *SosCaptureCommand) SetFlags(f *gnuflag.FlagSet) {
 }
 
 func (c *SosCaptureCommand) Init(args []string) error {
-	err := c.SosCommand.Init()
-	if err != nil {
-		return err
-	}
-	if c.destination == "" {
-		return fmt.Errorf("A destination is required, see `help` for more information.")
-	}
-	if c.destination != "" {
-		finfo, err := os.Stat(c.destination)
-		if err != nil {
-			return fmt.Errorf("%q doesn't exist, you must create that directory first", c.destination)
-		}
-		if !finfo.IsDir() {
-			return fmt.Errorf("Found %q, but it isn't a directory :(", c.destination)
-		}
-	}
-	if c.target == "0" {
-		return fmt.Errorf("Machine cannot be 0.")
-	}
+	// if c.destination == "" {
+	// 	return fmt.Errorf("A destination is required, see `help` for more information.")
+	// }
+	// if c.destination != "" {
+	// 	finfo, err := os.Stat(c.destination)
+	// 	if err != nil {
+	// 		return fmt.Errorf("%q doesn't exist, you must create that directory first", c.destination)
+	// 	}
+	// 	if !finfo.IsDir() {
+	// 		return fmt.Errorf("Found %q, but it isn't a directory :(", c.destination)
+	// 	}
+	// }
+	// if c.target == "0" {
+	// 	return fmt.Errorf("Machine cannot be 0.")
+	// }
 	return nil
 }
 
@@ -129,11 +126,6 @@ func (c *SosCaptureCommand) Run(ctx *cmd.Context) error {
 
 func main() {
 	loggo.ConfigureLoggers("<root>=INFO")
-
-	err := juju.InitJujuHome()
-	if err != nil {
-		panic(err)
-	}
 	ctx, err := cmd.DefaultContext()
 	if err != nil {
 		panic(err)

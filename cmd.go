@@ -21,40 +21,41 @@ package main
 import (
 	"fmt"
 
+//	"os"
 	"github.com/juju/loggo"
+//	"github.com/juju/cmd"
 	"github.com/juju/juju/cmd/envcmd"
-	"github.com/juju/juju/instance"
-	"github.com/juju/juju"
+	//"github.com/juju/juju/instance"
 	"github.com/juju/juju/state"
-	"github.com/juju/juju/utils/ssh"
+	//"github.com/juju/juju/utils/ssh"
 )
 
 var logger = loggo.GetLogger("juju.sos.cmd")
 
 type SosCommand struct {
 	envcmd.EnvCommandBase
-	Conn       *juju.Conn
+	state *state.State
 	MachineMap map[string]*state.Machine
 }
 
 func (c *SosCommand) Query(target string) error {
 	var err error
-	c.Conn, err = juju.NewConnFromName(c.EnvName)
+	client, err := c.NewAPIClient()
+
 	if err != nil {
-		return fmt.Errorf("Unable to connect to environment %q: %v", c.EnvName, err)
+		return err
 	}
-	defer c.Conn.Close()
+	defer client.Close()
 
 	c.MachineMap = make(map[string]*state.Machine)
-	st := c.Conn.State
-
 	if target == "" {
 		logger.Infof("Querying all machines")
 
-		machines, err := st.AllMachines()
+		machines, err := c.state.AllMachines()
 		for _, m := range machines {
 			// dont care about machine 0
 			if m.Id() != "0" {
+				fmt.Println("Running")
 				logger.Infof("Adding machine(%s)", m.Id())
 				c.MachineMap[m.Id()] = m
 			}
@@ -65,26 +66,24 @@ func (c *SosCommand) Query(target string) error {
 		return nil
 	}
 
-	if target != "" {
-		logger.Infof("Querying one machine(%s)", target)
-		m, err := st.Machine(target)
-		if err != nil {
-			return fmt.Errorf("Unable to use machine(%s)", target)
-		}
-		c.MachineMap[m.Id()] = m
-		return nil
-	}
 	return nil
 }
 
-func (c *SosCommand) ExecSsh(m *state.Machine) error {
-	host := instance.SelectPublicAddress(m.Addresses())
-	if host == "" {
-		return fmt.Errorf("could not resolve machine's public address")
-	}
-	logger.Infof("Capturing sosreport for machine %s", m.Id())
-	var options ssh.Options
-	cmdStr := []string{"sudo sosreport --batch && sudo chown ubuntu:ubuntu -R /tmp/sosreport*"}
-	cmd := ssh.Command("ubuntu@"+host, cmdStr, &options)
-	return cmd.Run()
+// func (c *SosCommand) ExecSsh(m *state.Machine) error {
+// 	host := instance.SelectPublicAddress(m.Addresses())
+// 	if host == "" {
+// 		return fmt.Errorf("could not resolve machine's public address")
+// 	}
+// 	logger.Infof("Capturing sosreport for machine %s", m.Id())
+// 	var options ssh.Options
+// 	cmdStr := []string{"sudo sosreport --batch && sudo chown ubuntu:ubuntu -R /tmp/sosreport*"}
+// 	cmd := ssh.Command("ubuntu@"+host, cmdStr, &options)
+// 	return cmd.Run()
+// }
+func main() {
+	fmt.Println("Running JUJU!")
+	loggo.ConfigureLoggers("<root>=INFO")
+	c := &SosCommand{}
+//	cmd.Main(c, ctx, os.Args[1:])
+	c.Query("")
 }
